@@ -31,12 +31,12 @@ pip install tqdm ipython easydict tensorboard tabulate scikit-learn pandas
 
 <b>2. Prepare datasets.</b>
 
-- [QVHighlights](https://drive.google.com/file/d/1Hiln02F1NEpoW8-iPZurRyi-47-W2_B9/view?usp=sharing) from [Moment-DETR](https://github.com/jayleicn/moment_detr).
-- [Charades-STA](https://app.box.com/s/h0sxa5klco6qve5ahnz50ly2nksmuedw/folder/138545516584) from [IA-Net](https://github.com/liudaizong/IA-Net).
+- [QVHighlights](https://drive.google.com/file/d/1Hiln02F1NEpoW8-iPZurRyi-47-W2_B9/view?usp=sharing) from [Moment-DETR](https://github.com/jayleicn/moment_detr)
+- [Charades-STA](https://app.box.com/s/h0sxa5klco6qve5ahnz50ly2nksmuedw/folder/138545516584) from [IA-Net](https://github.com/liudaizong/IA-Net)
 - [ActivityNet Captions](http://activity-net.org/challenges/2016/download.html#c3d)
 
-Download and extract each features under '../data/${dataset}/features/' directory.
-We organize the files in the following manner:
+Download and extract each features under '../data/${dataset}/features/' directory.<br>
+The files are organized in the following manner:
 ```
 EaTR
 ├── data
