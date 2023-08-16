@@ -4,7 +4,7 @@
     "debug": false,
     "data_ratio": 1.0,
     "results_root": "results",
-    "exp_id": "eatr",
+    "exp_id": "eatr_ckpt",
     "seed": 429,
     "device": 0,
     "num_workers": 4,
@@ -27,15 +27,15 @@
     "max_v_l": 75,
     "clip_length": 2,
     "max_windows": 5,
-    "train_path": "data/qvhighlights/highlight_train_release.jsonl",
-    "eval_path": "data/qvhighlights/highlight_val_release.jsonl",
+    "train_path": "data/highlight/highlight_train_release.jsonl",
+    "eval_path": "data/highlight/highlight_val_release.jsonl",
     "no_norm_vfeat": false,
     "no_norm_tfeat": false,
     "v_feat_dirs": [
-        "data/qvhighlights/features/slowfast_features",
-        "data/qvhighlights/features/clip_features"
+        "features/highlight/slowfast_features",
+        "features/highlight/clip_features"
     ],
-    "t_feat_dir": "data/qvhighlights/features/clip_text_features",
+    "t_feat_dir": "features/highlight/clip_text_features",
     "v_feat_dim": 2816,
     "t_feat_dim": 512,
     "ctx_mode": "video_tef",
@@ -75,5 +75,5 @@
     "max_after_nms": 10,
     "conf_thd": 0.0,
     "nms_thd": -1,
-    "results_dir": "results"
+    "results_dir": "results/hl-08_16_14_48-eatr_ckpt"
 }

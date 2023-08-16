@@ -1,7 +1,7 @@
 # EaTR (ICCV 2023)
 
 This repository provides the official PyTorch implementation of the ICCV 2023 paper:
-> **Knowing Where to Focus**: Event-aware Transformer for Video Grounding \[[arXiv](https://arxiv.org/abs/)\]<br>
+> **Knowing Where to Focus**: Event-aware Transformer for Video Grounding \[[arXiv](https://arxiv.org/abs/2308.06947)\]<br>
 > [Jinhyun Jang](https://jinhyunj.github.io/), [Jungin Park](https://park-jungin.github.io/), [Jin Kim](https://genie-kim.github.io/), [Hyeongjun Kwon](https://kwonjunn01.github.io/), [Kwanghoon Sohn](http://diml.yonsei.ac.kr/professor/)<br>
 > [Yonsei University](https://www.yonsei.ac.kr/sc/index.jsp)
 
