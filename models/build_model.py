@@ -2,9 +2,9 @@ import torch
 
 from models.model import EaTR
 from models.transformer import Transformer
-from matcher import build_matcher, build_event_matcher
-from position_encoding import build_position_encoding
-from criterion import SetCriterion
+from models.matcher import build_matcher, build_event_matcher
+from models.position_encoding import build_position_encoding
+from models.criterion import SetCriterion
 
 
 def build_model(args):

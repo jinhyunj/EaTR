@@ -6,12 +6,12 @@ results_root=results
 exp_id=pt
 
 ######## data paths
-train_path=data/subs_train.jsonl
-eval_path=data/highlight_val_release.jsonl
+train_path=data/qvhighlights/subs_train.jsonl
+eval_path=data/qvhighlights/highlight_val_release.jsonl
 eval_split_name=val
 
 ######## setup video+text features
-feat_root=features
+feat_root=data/qvhighlights/features
 
 # video features
 v_feat_dim=0

@@ -12,9 +12,9 @@ from torch.utils.data import DataLoader
 
 from config import TestOptions
 from models.build_model import build_model
-from span_utils import span_cxw_to_xx
+from utils.span_utils import span_cxw_to_xx
 from start_end_dataset import StartEndDataset, start_end_collate, prepare_batch_inputs
-from postprocessing import PostProcessor
+from models.postprocessing import PostProcessor
 from standalone_eval.eval import eval_submission
 from utils.basic_utils import save_jsonl, save_json
 from utils.temporal_nms import temporal_nms
