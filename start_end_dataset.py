@@ -81,11 +81,7 @@ class StartEndDataset(Dataset):
 
         model_inputs["query_feat"] = self._get_query_feat_by_qid(meta["qid"])  # (Dq, ) or (Lq, Dq)
         if self.use_video:
-            video_feat = self._get_video_feat_by_vid(meta["vid"])  # (Lv, Dv)
-            if self.dset_name == "anet":
-                video_feat, model_inputs["span_labels"], model_inputs["saliency_pos_labels"], model_inputs["saliency_neg_labels"] = \
-                    self.get_fixed_length_feat(video_feat, meta["relevant_windows"][0], meta['duration'])
-            model_inputs["video_feat"] = video_feat
+            model_inputs["video_feat"] = self._get_video_feat_by_vid(meta["vid"])  # (Lv, Dv)
             ctx_l = len(model_inputs["video_feat"])
         else:
             ctx_l = self.max_v_l
@@ -100,69 +96,17 @@ class StartEndDataset(Dataset):
             else:
                 model_inputs["video_feat"] = tef
 
-        if self.load_labels and self.dset_name != "anet":
-            if 'charades' in self.v_feat_dirs[0]:
-                model_inputs["span_labels"] = self.get_span_labels_charades(meta["relevant_windows"], meta["duration"])
+        if self.load_labels:
+            model_inputs["span_labels"] = self.get_span_labels(meta["relevant_windows"], ctx_l)  # (#windows, 2)
+            if "subs_train" not in self.data_path:
                 model_inputs["saliency_pos_labels"], model_inputs["saliency_neg_labels"] = \
-                    self.get_saliency_labels_wo_annot(meta["relevant_windows"][0], meta["duration"], ctx_l)
+                    self.get_saliency_labels_w_annot(meta["relevant_clip_ids"], meta["saliency_scores"], ctx_l)
             else:
-                model_inputs["span_labels"] = self.get_span_labels(meta["relevant_windows"], ctx_l)  # (#windows, 2)
-                if "subs_train" not in self.data_path:
-                    model_inputs["saliency_pos_labels"], model_inputs["saliency_neg_labels"] = \
-                        self.get_saliency_labels_w_annot(meta["relevant_clip_ids"], meta["saliency_scores"], ctx_l)
-                else:
-                    model_inputs["saliency_pos_labels"], model_inputs["saliency_neg_labels"] = \
-                        self.get_saliency_labels_wo_annot(meta["relevant_windows"][0], meta["duration"], ctx_l)  # only one gt
+                model_inputs["saliency_pos_labels"], model_inputs["saliency_neg_labels"] = \
+                    self.get_saliency_labels_sub_as_query(meta["relevant_windows"][0], ctx_l)  # only one gt
         return dict(meta=meta, model_inputs=model_inputs)
 
-    def get_fixed_length_feat(self, feat, windows, duration, max_n=2):
-        nfeats = len(feat)
-        if nfeats <= self.max_v_l:
-            stride = 1
-            ctx_l = nfeats
-        else:
-            stride = nfeats / self.max_v_l
-            ctx_l = self.max_v_l
-        
-        clip_len = duration/ctx_l
-
-        # span labels
-        if windows[0] <= windows[1]:
-            span_labels = [windows[0]/duration, windows[1]/duration]
-        else:
-            span_labels = [windows[1]/duration, windows[0]/duration]
-        span_labels = span_xx_to_cxw(torch.Tensor([span_labels]))
-
-        sample = np.round(np.arange(0, nfeats, stride)).astype(int)
-
-        if not (nfeats < self.max_v_l and len(sample) == nfeats) \
-                and not (nfeats >= self.max_v_l and len(sample) == self.max_v_l):
-            sample = sample[:self.max_v_l] # ignore last one
-        assert (nfeats < self.max_v_l and len(sample) == nfeats) \
-                or (nfeats >= self.max_v_l and len(sample) == self.max_v_l), \
-                "{} != {} or {} != {}".format(len(sample), nfeats, len(sample), self.max_v_l)
-
-        out = feat[sample, :]
-
-        gt_st = int(windows[0] / clip_len)
-        gt_ed = max(0, min(int(windows[1] / clip_len), ctx_l) - 1)
-        if gt_st > gt_ed:
-            gt_st = gt_ed
-
-        if gt_st != gt_ed:
-            pos_clip_indices = random.sample(range(gt_st, gt_ed+1), k=max_n)
-        else:
-            pos_clip_indices = [gt_st, gt_st]
-
-        neg_pool = list(range(0, gt_st)) + list(range(gt_ed+1, ctx_l))
-        if len(neg_pool) < max_n:
-            neg_clip_indices = [0,0]
-        else:
-            neg_clip_indices = random.sample(neg_pool, k=max_n)
-        
-        return out, span_labels, pos_clip_indices, neg_clip_indices
-
-    def get_saliency_labels_wo_annot(self, windows, duration, ctx_l, max_n=2):
+    def get_saliency_labels_sub_as_query(self, windows, duration, ctx_l, max_n=2):
         clip_len = duration/ctx_l
         gt_st = int(windows[0] / clip_len)
         gt_ed = max(0, min(int(windows[1] / clip_len), ctx_l) - 1)
@@ -216,23 +160,6 @@ class StartEndDataset(Dataset):
         neg_clip_indices = hard_neg_clip_indices + easy_neg_clip_indices
         return pos_clip_indices, neg_clip_indices
 
-    def get_span_labels_charades(self, windows, duration):
-        """
-        windows: list([st, ed]) in seconds. E.g. [[26, 36]], corresponding st_ed clip_indices [[13, 17]] (inclusive)
-            Note a maximum of `self.max_windows` windows are used.
-        returns Tensor of shape (#windows, 2), each row is [center, width] normalized by video length
-        """
-        if len(windows) > self.max_windows:
-            random.shuffle(windows)
-            windows = windows[:self.max_windows]
-        if self.span_loss_type == "l1":
-            windows = torch.Tensor(windows) / duration  # normalized windows in xx
-            windows = span_xx_to_cxw(windows)  # normalized windows in cxw
-        # TODO return windows_xx, windows_cxw together for span_loss_type=="ce"
-        else:
-            raise NotImplementedError
-        return windows
-
     def get_span_labels(self, windows, ctx_l):
         """
         windows: list([st, ed]) in seconds. E.g. [[26, 36]], corresponding st_ed clip_indices [[13, 17]] (inclusive)
@@ -280,15 +207,8 @@ class StartEndDataset(Dataset):
     def _get_video_feat_by_vid(self, vid):
         v_feat_list = []
         for _feat_dir in self.v_feat_dirs:
-            if 'charades' in _feat_dir:
-                _feat_path = join(_feat_dir, f"{vid}.npy")
-                _feat = np.load(_feat_path)[:self.max_v_l].squeeze(1).squeeze(1)
-                _feat =_feat.astype(np.float32)
-            elif 'activitynet' in _feat_dir:
-                _feat = self.feat_anet[vid]["c3d_features"][:].astype(np.float32)
-            else:
-                _feat_path = join(_feat_dir, f"{vid}.npz")
-                _feat = np.load(_feat_path)["features"][:self.max_v_l].astype(np.float32)
+            _feat_path = join(_feat_dir, f"{vid}.npz")
+            _feat = np.load(_feat_path)["features"][:self.max_v_l].astype(np.float32)
             if self.normalize_v:
                 _feat = l2_normalize_np_array(_feat)
             v_feat_list.append(_feat)

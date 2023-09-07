@@ -327,19 +327,7 @@ def eval_submission(submission, ground_truth, save_filename, verbose=True, match
         moment_ret_scores = eval_moment_retrieval(
             submission, ground_truth, save_filename, verbose=verbose)
         eval_metrics.update(moment_ret_scores)
-        if "charades" in save_filename:
-            moment_ret_scores_brief = {
-                "MR-full-mAP": moment_ret_scores["full"]["MR-mAP"]["average"],
-                "MR-full-mAP@0.5": moment_ret_scores["full"]["MR-mAP"]["0.5"],
-                "MR-full-mAP@0.75": moment_ret_scores["full"]["MR-mAP"]["0.75"],
-                "MR-short-mAP": moment_ret_scores["short"]["MR-mAP"]["average"],
-                "MR-middle-mAP": moment_ret_scores["middle"]["MR-mAP"]["average"],
-                "MR-full-R1@0.5": moment_ret_scores["full"]["MR-R1"]["0.5"],
-                "MR-full-R1@0.7": moment_ret_scores["full"]["MR-R1"]["0.7"],
-                "MR-full-R5@0.5": moment_ret_scores["full"]["MR-R5"]["0.5"],
-                "MR-full-R5@0.7": moment_ret_scores["full"]["MR-R5"]["0.7"],
-            }
-        elif "anet" in save_filename:
+        if any(i in save_filename for i in ["charades", "anet"]):
             moment_ret_scores_brief = {
                 "MR-full-mAP": moment_ret_scores["full"]["MR-mAP"]["average"],
                 "MR-full-mAP@0.5": moment_ret_scores["full"]["MR-mAP"]["0.5"],
